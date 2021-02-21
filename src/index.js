@@ -1,11 +1,11 @@
 import React from 'react';
 import ReactDOM from 'react-dom';
 import './index.css';
-import App from './App';
+import RichTextExample from './App';
 
 ReactDOM.render(
   <React.StrictMode>
-    <App />
+    <RichTextExample />
   </React.StrictMode>,
   document.getElementById('root')
 );
