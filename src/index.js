@@ -9,10 +9,9 @@ import RichText from './richText';
 
 ReactDOM.render(
   <React.StrictMode>
-    <App />
-    <Serialize/>
+    {/* <App />
+    <Serialize/> */}
     <RichText></RichText>
-    111
   </React.StrictMode>,
   document.getElementById('root')
 );
