@@ -1,11 +1,14 @@
 import React from 'react';
 import ReactDOM from 'react-dom';
 import './index.css';
-import RichTextExample from './App';
+import App from './App';
+import Serialize from './serialize';
+
 
 ReactDOM.render(
   <React.StrictMode>
-    <RichTextExample />
+    <App />
+    <Serialize/>
   </React.StrictMode>,
   document.getElementById('root')
 );

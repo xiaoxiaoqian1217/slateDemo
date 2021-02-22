@@ -64,14 +64,72 @@ const App = () => {
   const renderLeaf = useCallback(props => {
     return <Leaf {...props} />
   }, [])
+
+  const CustomEditor = {
+      isBoldActive(editor){
+        const [match] = Editor.nodes(editor, {
+          match: n => n.bold === true,
+        })
+        return match
+      },
+      isCodeActive(editor){
+        const [match] = Editor.nodes(editor, {
+          match: n => n.type === 'code',
+        })
+        return match
+      },
+      toggleBoldMark(editor){
+        const isActive = CustomEditor.isBoldActive(editor)
+        console.log('%c  isActive:', 'color: #0e93e0;background: #aaefe5;', isActive);
+
+        Transforms.setNodes(
+          editor,
+          { bold: isActive ? null : true },
+          // Apply it to text nodes, and split the text node up if the
+          // selection is overlapping only part of it.
+          { match: n => Text.isText(n), split: true }
+        )
+      },
+      toggleCodeBlock(editor){
+        const isActive = CustomEditor.isCodeActive(editor)
+        Transforms.setNodes(
+          editor,
+          { type: isActive ? 'paragraph' : 'code' },
+          { match: n => Editor.isBlock(editor, n) }
+        )
+      }
+
+  }
   return (
     // 编辑器外头需要包裹一个div ，不然会报错
     // useCallback的快速刷新问题
     <div> 
       <Slate editor={editor}
         value={value}
-        onChange={newValue => setValue(newValue)}
+        onChange={newValue => {
+          setValue(newValue)
+        const content = JSON.stringify(newValue)
+        localStorage.setItem('content', content)   
+        }}
         >
+          <div>
+        <button
+          onMouseDown={event => {
+            event.preventDefault()
+            CustomEditor.toggleBoldMark(editor)
+          }}
+        >
+          Bold
+        </button>
+        <button
+          onMouseDown={event => {
+            event.preventDefault()
+            CustomEditor.toggleCodeBlock(editor)
+          }}
+        >
+          Code Block
+        </button>
+      </div>
         <Editable 
         renderElement={renderElement}
         renderLeaf={renderLeaf}
@@ -84,27 +142,14 @@ const App = () => {
             // When "`" is pressed, keep our existing code block logic.
             case '`': {
               event.preventDefault()
-              const [match] = Editor.nodes(editor, {
-                match: n => n.type === 'code',
-              })
-              Transforms.setNodes(
-                editor,
-                { type: match ? 'paragraph' : 'code' },
-                { match: n => Editor.isBlock(editor, n) }
-              )
+              CustomEditor.toggleCodeBlock(editor)
               break
             }
 
             // When "B" is pressed, bold the text in the selection.
             case 'b': {
               event.preventDefault()
-              Transforms.setNodes(
-                editor,
-                { bold: true },
-                // Apply it to text nodes, and split the text node up if the
-                // selection is overlapping only part of it.
-                { match: n => Text.isText(n), split: true }
-              )
+              CustomEditor.toggleBoldMark(editor)
               break
             }
           }
