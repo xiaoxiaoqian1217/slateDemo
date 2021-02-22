@@ -36,13 +36,14 @@ const SerializeCom = () => {
   const editor = useMemo(() => withReact(createEditor()), []);
   // Use our deserializing function to read the data from Local Storage.
   const data = localStorage.getItem("content")
+  // 文本编辑器中的初始值都应该是一个对象，展示
   const [value, setValue] = useState(
     data && deserialize(data) || [
       {
         children: [
           {
             text: 'This is editable plain text!',
-            marks: []
+            // marks: []
           }
         ]
       }

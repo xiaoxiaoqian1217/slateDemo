@@ -3,12 +3,16 @@ import ReactDOM from 'react-dom';
 import './index.css';
 import App from './App';
 import Serialize from './serialize';
+import RichText from './richText';
+
 
 
 ReactDOM.render(
   <React.StrictMode>
     <App />
     <Serialize/>
+    <RichText></RichText>
+    111
   </React.StrictMode>,
   document.getElementById('root')
 );

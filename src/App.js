@@ -4,7 +4,6 @@ import React, { useEffect, useMemo, useState, useCallback } from 'react'
 import { createEditor, Editor, Transforms, Text  } from 'slate'
 // Import the Slate components and React plugin.
 import { Slate, Editable, withReact } from 'slate-react'
-// Import the `Editor` and `Transforms` helpers from Slate.
 
 import './App.css';
 // @refresh reset
