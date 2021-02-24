@@ -1,6 +1,6 @@
 import React, { useEffect, useMemo, useState, useCallback } from 'react'
 import { Slate, Editable, withReact, useSlate } from 'slate-react'
-import { createEditor, Editor, Transforms, Text  } from 'slate'
+import { createEditor, Editor, Transforms, Text, Element as SlateElement  } from 'slate'
 import { withHistory } from 'slate-history'
 import { Button, Icon, Toolbar } from './component'
 // @refresh reset
@@ -64,7 +64,7 @@ const Leaf = ({ attributes, children, leaf }) => {
   return <span {...attributes}>{children}</span>
 }
 
-// 文本按钮组件
+// 文本按钮组件, format 是传入的prop
 const MarkButton = ({ format, icon }) => {
   // 共享编辑器对象
   const editor = useSlate()
@@ -82,14 +82,15 @@ const MarkButton = ({ format, icon }) => {
   )
 }
 
-// 当前活跃的标记属性
+// 当前活跃的文本标记属性
 const isMarkActive = (editor, format) => {
+  // 获取当前焦点所在位置的文本属性
   const marks = Editor.marks(editor)
   console.log('%c  marks:', 'color: #0e93e0;background: #aaefe5;', marks);
   return marks ? marks[format] === true : false
 }
 
-// 切换当前富文本的格式
+// 设置当前富文本的格式， 可以设置多个
 const toggleMark = (editor, format) => {
   const isActive = isMarkActive(editor, format)
 
@@ -98,6 +99,40 @@ const toggleMark = (editor, format) => {
   } else {
     Editor.addMark(editor, format, true)
   }
+}
+
+// 元素按钮组件
+const BlockButton = ( { format, icon }) => {
+  // 共享编辑器对象
+  const editor = useSlate()
+  return (
+    <Button
+      active={isBlockActive(editor, format)}
+      onMouseDown={event => {
+        event.preventDefault()
+        toggleBoldMark(editor, editor)
+        // toggleMark(editor, editor)
+      }}
+    >
+      <Icon>{icon}</Icon>
+    </Button>
+  )
+}
+
+// 当前活跃的元素标记属性
+const isBlockActive = (editor, format) => {
+  // 获取当前的元素节点
+  const [match] = Editor.nodes(editor, {
+    match: n =>
+      !Editor.isEditor(n) && SlateElement.isElement(n) && n.type === format,
+  })
+  console.log('match', match)
+  return !!match
+}
+// 设置当前选中的节点的数据
+const toggleBoldMark = (editor, format) => {
+  const isActive = isBlockActive(editor, format)
+  console.log('isActive', isActive)
 }
 
 
@@ -148,11 +183,11 @@ const RichText = props => {
         <MarkButton format="italic" icon="format_italic" />
         <MarkButton format="underline" icon="format_underlined" />
         <MarkButton format="code" icon="code" />
-        {/* <BlockButton format="heading-one" icon="looks_one" />
+        <BlockButton format="heading-one" icon="looks_one" />
         <BlockButton format="heading-two" icon="looks_two" />
         <BlockButton format="block-quote" icon="format_quote" />
         <BlockButton format="numbered-list" icon="format_list_numbered" />
-        <BlockButton format="bulleted-list" icon="format_list_bulleted" /> */}
+        <BlockButton format="bulleted-list" icon="format_list_bulleted" />
       </Toolbar>
         <Editable
           renderElement = {renderElement}
