@@ -43,6 +43,8 @@ const initialValue = [
   },
 ]
 
+const LIST_TYPES = ['numbered-list', 'bulleted-list']
+
 // 文本节点数据
 const Leaf = ({ attributes, children, leaf }) => {
   if (leaf.bold) {
@@ -73,7 +75,6 @@ const MarkButton = ({ format, icon }) => {
       active={isMarkActive(editor, format)}
       onMouseDown={event => {
         event.preventDefault()
-        console.log('%c  editor:', 'color: #0e93e0;background: #aaefe5;', editor);
         toggleMark(editor, format)
       }}
     >
@@ -86,14 +87,13 @@ const MarkButton = ({ format, icon }) => {
 const isMarkActive = (editor, format) => {
   // 获取当前焦点所在位置的文本属性
   const marks = Editor.marks(editor)
-  console.log('%c  marks:', 'color: #0e93e0;background: #aaefe5;', marks);
   return marks ? marks[format] === true : false
 }
 
 // 设置当前富文本的格式， 可以设置多个
 const toggleMark = (editor, format) => {
   const isActive = isMarkActive(editor, format)
-
+  console.log('isActive', isActive)
   if (isActive) {
     Editor.removeMark(editor, format)
   } else {
@@ -110,8 +110,7 @@ const BlockButton = ( { format, icon }) => {
       active={isBlockActive(editor, format)}
       onMouseDown={event => {
         event.preventDefault()
-        toggleBoldMark(editor, editor)
-        // toggleMark(editor, editor)
+        toggleBoldMark(editor, format)
       }}
     >
       <Icon>{icon}</Icon>
@@ -126,19 +125,36 @@ const isBlockActive = (editor, format) => {
     match: n =>
       !Editor.isEditor(n) && SlateElement.isElement(n) && n.type === format,
   })
-  console.log('match', match)
   return !!match
 }
 // 设置当前选中的节点的数据
 const toggleBoldMark = (editor, format) => {
   const isActive = isBlockActive(editor, format)
-  console.log('isActive', isActive)
+  const isList = LIST_TYPES.includes(format)
+  // 拆分节点
+  Transforms.unwrapNodes(editor, {
+    match: n => {
+      return  LIST_TYPES.includes(
+        !Editor.isEditor(n) && SlateElement.isElement(n) && n.type
+      )
+    },
+    split: true,
+  })
+  // paragraph 表示的是默认的 文本样式 
+  const newProperties = {
+    type: isActive ? 'paragraph' : isList ? 'list-item' : format,
+  }
+  console.log('newProperties', newProperties, isActive)
+  Transforms.setNodes(editor, newProperties)
+  if (!isActive && isList) {
+    const block = { type: format, children: [] }
+    Transforms.wrapNodes(editor, block)
+  }
 }
 
 
 // 元素节点数据
 const Element = ({ attributes, children, element }) => {
-  console.log('%c  element:', 'color: #0e93e0;background: #aaefe5;', element);
   switch(element.type){
     case 'block-quote': 
     return <blockquote {...attributes}>{children}</blockquote>
@@ -175,7 +191,6 @@ const RichText = props => {
       <Slate
         editor = {editor}
         value={value}
-       
         onChange={newValue => setValue(newValue)}
       >
         <Toolbar>
